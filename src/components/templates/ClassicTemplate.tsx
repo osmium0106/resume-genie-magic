@@ -6,6 +6,7 @@ interface CVData {
   email: string;
   phone: string;
   summary: string;
+  profileImage?: string;
   experience?: Array<{
     title: string;
     company: string;
@@ -24,6 +25,15 @@ const ClassicTemplate: React.FC<{ data: CVData }> = ({ data }) => {
   return (
     <div className="max-w-[21cm] mx-auto bg-white p-8 shadow-lg">
       <div className="text-center mb-8 border-b-2 border-gray-800 pb-4">
+        <div className="flex justify-center mb-4">
+          {data.profileImage && (
+            <img 
+              src={data.profileImage} 
+              alt={data.fullName}
+              className="w-28 h-28 rounded-full object-cover border-2 border-gray-800"
+            />
+          )}
+        </div>
         <h1 className="text-4xl font-serif font-bold text-gray-900 mb-3">{data.fullName}</h1>
         <div className="flex justify-center gap-6 text-gray-700">
           <span>{data.email}</span>

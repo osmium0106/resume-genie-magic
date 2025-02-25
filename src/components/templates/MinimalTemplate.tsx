@@ -6,6 +6,7 @@ interface CVData {
   email: string;
   phone: string;
   summary: string;
+  profileImage?: string;
   experience?: Array<{
     title: string;
     company: string;
@@ -24,10 +25,21 @@ const MinimalTemplate: React.FC<{ data: CVData }> = ({ data }) => {
   return (
     <div className="max-w-[21cm] mx-auto bg-white p-8 shadow-lg">
       <div className="border-b-2 border-gray-300 pb-4 mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">{data.fullName}</h1>
-        <div className="flex gap-4 mt-2 text-gray-600">
-          <span>{data.email}</span>
-          <span>{data.phone}</span>
+        <div className="flex items-center gap-6">
+          {data.profileImage && (
+            <img 
+              src={data.profileImage} 
+              alt={data.fullName}
+              className="w-24 h-24 rounded-full object-cover"
+            />
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">{data.fullName}</h1>
+            <div className="flex gap-4 mt-2 text-gray-600">
+              <span>{data.email}</span>
+              <span>{data.phone}</span>
+            </div>
+          </div>
         </div>
       </div>
       

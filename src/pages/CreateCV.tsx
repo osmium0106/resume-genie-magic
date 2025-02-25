@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,14 @@ interface Education {
   year: string;
 }
 
+interface GenerateAIContentRequest {
+  fullName: string;
+  currentPosition: string;
+  yearsOfExperience: string;
+  industry: string;
+  skills: string;
+}
+
 const CreateCV = () => {
   const { templateId } = useParams();
   const navigate = useNavigate();
@@ -32,11 +39,13 @@ const CreateCV = () => {
     email: "",
     phone: "",
     summary: "",
+    profileImage: "",
     experience: [{ title: "", company: "", period: "", description: "" }],
     education: [{ degree: "", school: "", year: "" }],
     skills: [""],
   });
   const [showPreview, setShowPreview] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -69,6 +78,80 @@ const CreateCV = () => {
       ...prev,
       skills: prev.skills.map((skill, i) => (i === index ? value : skill)),
     }));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          profileImage: reader.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const generateAIContent = async () => {
+    if (!formData.fullName || !formData.experience[0].title) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide at least your name and current position.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const requestData: GenerateAIContentRequest = {
+        fullName: formData.fullName,
+        currentPosition: formData.experience[0].title,
+        yearsOfExperience: formData.experience[0].period,
+        industry: formData.experience[0].company,
+        skills: formData.skills.join(", "),
+      };
+
+      const response = await fetch("/api/generate-cv-content", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate content");
+
+      const data = await response.json();
+      
+      setFormData(prev => ({
+        ...prev,
+        summary: data.summary,
+        skills: data.skills.split(", "),
+        experience: [
+          {
+            ...prev.experience[0],
+            description: data.description
+          },
+          ...prev.experience.slice(1)
+        ],
+      }));
+
+      toast({
+        title: "Success!",
+        description: "AI-generated content has been added to your CV.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate AI content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const addExperience = () => {
@@ -172,7 +255,17 @@ const CreateCV = () => {
           <form className="space-y-8 bg-white rounded-lg shadow-md p-8">
             {/* Personal Information */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
+                <Button
+                  type="button"
+                  onClick={generateAIContent}
+                  disabled={isGenerating}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isGenerating ? "Generating..." : "Generate with AI"}
+                </Button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -214,6 +307,19 @@ const CreateCV = () => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="+1 234 567 8900"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
+                    Profile Image
+                  </label>
+                  <Input
+                    id="profileImage"
+                    name="profileImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/90"
                   />
                 </div>
               </div>
