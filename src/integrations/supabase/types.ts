@@ -9,7 +9,147 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      cv_education: {
+        Row: {
+          created_at: string
+          cv_id: string
+          degree: string
+          id: string
+          school: string
+          year: string
+        }
+        Insert: {
+          created_at?: string
+          cv_id: string
+          degree: string
+          id?: string
+          school: string
+          year: string
+        }
+        Update: {
+          created_at?: string
+          cv_id?: string
+          degree?: string
+          id?: string
+          school?: string
+          year?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cv_education_cv_id_fkey"
+            columns: ["cv_id"]
+            isOneToOne: false
+            referencedRelation: "cvs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cv_experiences: {
+        Row: {
+          company: string
+          created_at: string
+          cv_id: string
+          description: string
+          id: string
+          period: string
+          title: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          cv_id: string
+          description: string
+          id?: string
+          period: string
+          title: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          cv_id?: string
+          description?: string
+          id?: string
+          period?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cv_experiences_cv_id_fkey"
+            columns: ["cv_id"]
+            isOneToOne: false
+            referencedRelation: "cvs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cv_skills: {
+        Row: {
+          created_at: string
+          cv_id: string
+          id: string
+          skill: string
+        }
+        Insert: {
+          created_at?: string
+          cv_id: string
+          id?: string
+          skill: string
+        }
+        Update: {
+          created_at?: string
+          cv_id?: string
+          id?: string
+          skill?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cv_skills_cv_id_fkey"
+            columns: ["cv_id"]
+            isOneToOne: false
+            referencedRelation: "cvs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cvs: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          phone: string
+          profile_image: string | null
+          summary: string
+          template_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          phone: string
+          profile_image?: string | null
+          summary: string
+          template_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          profile_image?: string | null
+          summary?: string
+          template_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
