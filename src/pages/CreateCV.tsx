@@ -95,6 +95,69 @@ const CreateCV = () => {
     }
   };
 
+  const handleEnhanceField = async (field: 'summary' | 'experience' | 'skills', content: string) => {
+    if (!content) {
+      toast({
+        title: "Missing Content",
+        description: "Please provide some initial content to enhance.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const context = {
+        fullName: formData.fullName,
+        currentPosition: formData.experience[0]?.title || '',
+        industry: formData.experience[0]?.company || '',
+      };
+
+      const { data, error } = await supabase.functions.invoke('generate-cv-content', {
+        body: { field, content, context }
+      });
+
+      if (error) throw error;
+      
+      if (data.text) {
+        setFormData(prev => {
+          if (field === 'skills') {
+            return {
+              ...prev,
+              skills: data.text.split(',').map((skill: string) => skill.trim())
+            };
+          } else if (field === 'experience') {
+            return {
+              ...prev,
+              experience: prev.experience.map((exp, index) => 
+                index === 0 ? { ...exp, description: data.text } : exp
+              )
+            };
+          } else {
+            return {
+              ...prev,
+              [field]: data.text
+            };
+          }
+        });
+
+        toast({
+          title: "Success!",
+          description: `${field.charAt(0).toUpperCase() + field.slice(1)} has been enhanced with AI.`,
+        });
+      }
+    } catch (error) {
+      console.error('Error enhancing content:', error);
+      toast({
+        title: "Error",
+        description: "Failed to enhance content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const generateAIContent = async () => {
     if (!formData.fullName || !formData.experience[0].title) {
       toast({

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { MagicWand } from 'lucide-react';
 
 interface CVData {
   fullName: string;
@@ -21,7 +22,11 @@ interface CVData {
   skills?: string[];
 }
 
-const ModernTemplate: React.FC<{ data: CVData }> = ({ data }) => {
+const ModernTemplate: React.FC<{ 
+  data: CVData;
+  onEnhanceField?: (field: 'summary' | 'experience' | 'skills', content: string) => Promise<void>;
+  isEditing?: boolean;
+}> = ({ data, onEnhanceField, isEditing = false }) => {
   return (
     <div className="max-w-[21cm] mx-auto bg-white shadow-lg">
       <div className="bg-purple-600 text-white p-8">
@@ -56,7 +61,18 @@ const ModernTemplate: React.FC<{ data: CVData }> = ({ data }) => {
       
       <div className="p-8">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-purple-600 mb-3">Professional Summary</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-2xl font-bold text-purple-600">Professional Summary</h2>
+            {isEditing && onEnhanceField && (
+              <button
+                onClick={() => onEnhanceField('summary', data.summary)}
+                className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
+                title="Enhance with AI"
+              >
+                <MagicWand className="w-5 h-5" />
+              </button>
+            )}
+          </div>
           <p className="text-gray-700 leading-relaxed">{data.summary}</p>
         </div>
 
@@ -70,7 +86,18 @@ const ModernTemplate: React.FC<{ data: CVData }> = ({ data }) => {
                   <span className="text-purple-600 font-medium">{exp.period}</span>
                 </div>
                 <div className="text-gray-700 font-medium mb-2">{exp.company}</div>
-                <p className="text-gray-600">{exp.description}</p>
+                <div className="flex items-start gap-2">
+                  <p className="text-gray-600 flex-grow">{exp.description}</p>
+                  {isEditing && onEnhanceField && (
+                    <button
+                      onClick={() => onEnhanceField('experience', exp.description)}
+                      className="flex-shrink-0 text-purple-600 hover:text-purple-700 mt-1"
+                      title="Enhance with AI"
+                    >
+                      <MagicWand className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -94,7 +121,18 @@ const ModernTemplate: React.FC<{ data: CVData }> = ({ data }) => {
 
           {data.skills && (
             <div>
-              <h2 className="text-2xl font-bold text-purple-600 mb-4">Skills</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-purple-600">Skills</h2>
+                {isEditing && onEnhanceField && (
+                  <button
+                    onClick={() => onEnhanceField('skills', data.skills?.join(', ') || '')}
+                    className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
+                    title="Enhance with AI"
+                  >
+                    <MagicWand className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-2">
                 {data.skills.map((skill, index) => (
                   <span key={index} className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">

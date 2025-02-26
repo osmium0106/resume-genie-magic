@@ -13,34 +13,52 @@ serve(async (req) => {
   }
 
   try {
-    const { fullName, currentPosition, yearsOfExperience, industry, skills } = await req.json();
+    const { field, content, context } = await req.json();
 
     const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') || '');
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 
-    const prompt = `Given this information about a professional:
-    - Name: ${fullName}
-    - Current Position: ${currentPosition}
-    - Years of Experience: ${yearsOfExperience}
-    - Industry: ${industry}
-    - Skills: ${skills}
-
-    Please generate:
-    1. A professional summary (about 2-3 sentences)
-    2. A detailed skills section (list of 8-10 relevant skills)
-    3. A professional description for their current role (2-3 sentences)
-
-    Format the response as a JSON object with keys: "summary", "skills", "description"`;
+    let prompt = '';
+    switch (field) {
+      case 'summary':
+        prompt = `Given this context about a professional:
+          ${context}
+          
+          Please enhance this professional summary while keeping the core message:
+          "${content}"
+          
+          Generate a polished, confident professional summary (2-3 sentences) that highlights their expertise and value proposition.`;
+        break;
+      case 'experience':
+        prompt = `Given this context about a professional:
+          ${context}
+          
+          Please enhance this job description while keeping the core information:
+          "${content}"
+          
+          Generate a compelling description (2-3 sentences) that highlights achievements and responsibilities.`;
+        break;
+      case 'skills':
+        prompt = `Given this context about a professional:
+          ${context}
+          
+          Based on these current skills:
+          "${content}"
+          
+          Generate an enhanced, comma-separated list of 8-10 relevant technical and soft skills that would be valuable in their field.`;
+        break;
+      default:
+        throw new Error('Invalid field specified');
+    }
 
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
     
-    // Parse the JSON response
-    const content = JSON.parse(text);
-    console.log('Generated content:', content);
+    console.log('Generated content for field:', field);
+    console.log('Generated text:', text);
 
-    return new Response(JSON.stringify(content), {
+    return new Response(JSON.stringify({ text }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
