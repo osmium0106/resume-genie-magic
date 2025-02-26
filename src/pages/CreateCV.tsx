@@ -8,6 +8,7 @@ import ModernTemplate from "@/components/templates/ModernTemplate";
 import ClassicTemplate from "@/components/templates/ClassicTemplate";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import { supabase } from "@/lib/supabase";
 
 interface Experience {
   title: string;
@@ -114,17 +115,11 @@ const CreateCV = () => {
         skills: formData.skills.join(", "),
       };
 
-      const response = await fetch("/api/generate-cv-content", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
+      const { data, error } = await supabase.functions.invoke('generate-cv-content', {
+        body: requestData
       });
 
-      if (!response.ok) throw new Error("Failed to generate content");
-
-      const data = await response.json();
+      if (error) throw error;
       
       setFormData(prev => ({
         ...prev,
@@ -144,6 +139,7 @@ const CreateCV = () => {
         description: "AI-generated content has been added to your CV.",
       });
     } catch (error) {
+      console.error('Error generating content:', error);
       toast({
         title: "Error",
         description: "Failed to generate AI content. Please try again.",
