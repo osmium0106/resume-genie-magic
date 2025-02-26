@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Wand2 } from 'lucide-react';
 
@@ -63,11 +62,12 @@ const ModernTemplate: React.FC<{
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-2xl font-bold text-purple-600">Professional Summary</h2>
-            {isEditing && onEnhanceField && (
+            {isEditing && onEnhanceField && data.summary && (
               <button
                 onClick={() => onEnhanceField('summary', data.summary)}
                 className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
                 title="Enhance with AI"
+                type="button"
               >
                 <Wand2 className="w-5 h-5" />
               </button>
@@ -88,11 +88,12 @@ const ModernTemplate: React.FC<{
                 <div className="text-gray-700 font-medium mb-2">{exp.company}</div>
                 <div className="flex items-start gap-2">
                   <p className="text-gray-600 flex-grow">{exp.description}</p>
-                  {isEditing && onEnhanceField && (
+                  {isEditing && onEnhanceField && exp.description && (
                     <button
                       onClick={() => onEnhanceField('experience', exp.description)}
                       className="flex-shrink-0 text-purple-600 hover:text-purple-700 mt-1"
                       title="Enhance with AI"
+                      type="button"
                     >
                       <Wand2 className="w-5 h-5" />
                     </button>
@@ -123,11 +124,12 @@ const ModernTemplate: React.FC<{
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold text-purple-600">Skills</h2>
-                {isEditing && onEnhanceField && (
+                {isEditing && onEnhanceField && data.skills.length > 0 && (
                   <button
                     onClick={() => onEnhanceField('skills', data.skills?.join(', ') || '')}
                     className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
                     title="Enhance with AI"
+                    type="button"
                   >
                     <Wand2 className="w-5 h-5" />
                   </button>
@@ -149,4 +151,3 @@ const ModernTemplate: React.FC<{
 };
 
 export default ModernTemplate;
-

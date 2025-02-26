@@ -8,52 +8,41 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { field, content, context } = await req.json();
+    const apiKey = Deno.env.get('GEMINI_API_KEY');
 
-    const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY') || '');
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY is not set');
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 
     let prompt = '';
+    let result;
+
     switch (field) {
       case 'summary':
-        prompt = `Given this context about a professional:
-          ${context}
-          
-          Please enhance this professional summary while keeping the core message:
-          "${content}"
-          
-          Generate a polished, confident professional summary (2-3 sentences) that highlights their expertise and value proposition.`;
+        prompt = `Given this context about a professional named ${context.fullName} who works as a ${context.currentPosition} in the ${context.industry} industry, please enhance this professional summary while keeping the core message: "${content}". Generate a polished, confident professional summary (2-3 sentences) that highlights their expertise and value proposition.`;
         break;
       case 'experience':
-        prompt = `Given this context about a professional:
-          ${context}
-          
-          Please enhance this job description while keeping the core information:
-          "${content}"
-          
-          Generate a compelling description (2-3 sentences) that highlights achievements and responsibilities.`;
+        prompt = `Given this context about a professional named ${context.fullName} who works as a ${context.currentPosition} in the ${context.industry} industry, please enhance this job description while keeping the core information: "${content}". Generate a compelling description (2-3 sentences) that highlights achievements and responsibilities.`;
         break;
       case 'skills':
-        prompt = `Given this context about a professional:
-          ${context}
-          
-          Based on these current skills:
-          "${content}"
-          
-          Generate an enhanced, comma-separated list of 8-10 relevant technical and soft skills that would be valuable in their field.`;
+        prompt = `Given this context about a professional named ${context.fullName} who works as a ${context.currentPosition} in the ${context.industry} industry, and based on these current skills: "${content}", generate an enhanced, comma-separated list of 8-10 relevant technical and soft skills that would be valuable in their field.`;
         break;
       default:
         throw new Error('Invalid field specified');
     }
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+    const result = await model.generateText(prompt);
+    const text = result.text;
     
     console.log('Generated content for field:', field);
     console.log('Generated text:', text);
