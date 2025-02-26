@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MagicWand } from 'lucide-react';
+import { Wand2 } from 'lucide-react';
 
 interface CVData {
   fullName: string;
@@ -69,7 +69,7 @@ const ModernTemplate: React.FC<{
                 className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
                 title="Enhance with AI"
               >
-                <MagicWand className="w-5 h-5" />
+                <Wand2 className="w-5 h-5" />
               </button>
             )}
           </div>
@@ -94,7 +94,7 @@ const ModernTemplate: React.FC<{
                       className="flex-shrink-0 text-purple-600 hover:text-purple-700 mt-1"
                       title="Enhance with AI"
                     >
-                      <MagicWand className="w-5 h-5" />
+                      <Wand2 className="w-5 h-5" />
                     </button>
                   )}
                 </div>
@@ -129,7 +129,7 @@ const ModernTemplate: React.FC<{
                     className="flex items-center gap-2 text-purple-600 hover:text-purple-700"
                     title="Enhance with AI"
                   >
-                    <MagicWand className="w-5 h-5" />
+                    <Wand2 className="w-5 h-5" />
                   </button>
                 )}
               </div>
@@ -149,3 +149,4 @@ const ModernTemplate: React.FC<{
 };
 
 export default ModernTemplate;
+
