@@ -38,6 +38,7 @@ serve(async (req) => {
     
     // Parse the JSON response
     const content = JSON.parse(text);
+    console.log('Generated content:', content);
 
     return new Response(JSON.stringify(content), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

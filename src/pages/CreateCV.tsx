@@ -8,7 +8,7 @@ import ModernTemplate from "@/components/templates/ModernTemplate";
 import ClassicTemplate from "@/components/templates/ClassicTemplate";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Experience {
   title: string;
