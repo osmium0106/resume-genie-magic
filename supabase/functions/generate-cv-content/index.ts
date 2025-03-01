@@ -13,104 +13,94 @@ serve(async (req) => {
   }
 
   try {
-    const requestData = await req.json();
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
+    const { field, content, context, additionalInstructions } = await req.json();
 
+    // Get API key from environment variable
+    const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not set');
+      throw new Error("GEMINI_API_KEY is not set");
     }
 
-    let prompt = '';
-    let field = requestData.field || '';
-    let content = requestData.content || '';
-    let context = requestData.context || {};
+    console.log(`Generating content for field: ${field}`);
+    console.log(`Content prompt: ${content}`);
+    console.log(`Context: ${JSON.stringify(context)}`);
+    console.log(`Additional instructions: ${additionalInstructions || "None"}`);
 
-    // Handle different types of requests (field-specific enhancements or full CV generation)
-    if (field) {
-      // Field-specific enhancement
-      switch (field) {
-        case 'summary':
-          prompt = `Given this context about a professional named ${context.fullName || 'the professional'} who works as a ${context.currentPosition || 'professional'} in the ${context.industry || 'industry'}, please enhance this professional summary while keeping the core message: "${content}". Generate a polished, confident professional summary (2-3 sentences) that highlights their expertise and value proposition.`;
-          break;
-        case 'experience':
-          prompt = `Given this context about a professional named ${context.fullName || 'the professional'} who works as a ${context.currentPosition || 'professional'} in the ${context.industry || 'industry'}, please enhance this job description while keeping the core information: "${content}". Generate a compelling description (2-3 sentences) that highlights achievements and responsibilities.`;
-          break;
-        case 'skills':
-          prompt = `Given this context about a professional named ${context.fullName || 'the professional'} who works as a ${context.currentPosition || 'professional'} in the ${context.industry || 'industry'}, and based on these current skills: "${content}", generate an enhanced, comma-separated list of 8-10 relevant technical and soft skills that would be valuable in their field.`;
-          break;
-        default:
-          throw new Error('Invalid field specified');
-      }
-    } else {
-      // Full CV generation based on basic information
-      const fullName = requestData.fullName || '';
-      const currentPosition = requestData.currentPosition || '';
-      const yearsOfExperience = requestData.yearsOfExperience || '';
-      const industry = requestData.industry || '';
-      const skills = requestData.skills || '';
-
-      prompt = `Create a professional summary, job description, and skill list for a CV. The person's name is ${fullName}, they work as a ${currentPosition} with ${yearsOfExperience} years of experience in the ${industry} industry. Their current skills include: ${skills}. Format the response as a JSON object with three keys: "summary" (a professional summary paragraph), "description" (a compelling job description focused on achievements), and "skills" (a comma-separated list of 8-10 relevant skills).`;
+    // Build the prompt based on the field
+    let prompt = "";
+    
+    if (field === 'summary') {
+      prompt = `Enhance this professional summary for a CV: "${content}". 
+      Context: Name: ${context.fullName || "N/A"}, Position: ${context.currentPosition || "N/A"}, Industry: ${context.industry || "N/A"}.
+      Keep it concise, about 50 words in 4 lines maximum. Don't label it as "Option 1" or similar, just provide the enhanced content.`;
+    } 
+    else if (field === 'experience') {
+      prompt = `Enhance this job description for a CV: "${content}".
+      Context: Position: ${context.currentPosition || "N/A"}, Company/Industry: ${context.industry || "N/A"}.
+      Keep it concise, about 50 words in 4 lines maximum. Focus on achievements and responsibilities. 
+      Don't label it as "Option 1" or similar, just provide the enhanced content.`;
+    } 
+    else if (field === 'skills') {
+      prompt = `Based on this skill: "${content}", generate 5 similar and relevant skills that would complement it on a CV.
+      Return only 5 skills as a comma-separated list of single words or short phrases. 
+      For example, if the input is "coding", return something like "HTML, CSS, JavaScript, Python, C++".`;
     }
 
-    console.log('Sending request to Gemini API with prompt:', prompt);
+    // Add any additional instructions if provided
+    if (additionalInstructions) {
+      prompt += ` ${additionalInstructions}`;
+    }
 
-    // Use the new Gemini API endpoint format
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-    const response = await fetch(apiUrl, {
-      method: 'POST',
+    // Make API request to Gemini API
+    const geminiEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const response = await fetch(geminiEndpoint, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         contents: [{
           parts: [{ text: prompt }]
         }]
-      })
+      }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error('Gemini API error:', errorData);
-      throw new Error(`Gemini API error: ${response.status} ${response.statusText}`);
-    }
+    const responseData = await response.json();
+    console.log("API Response:", JSON.stringify(responseData));
 
-    const data = await response.json();
-    console.log('Received response from Gemini API:', JSON.stringify(data));
-
-    let text = '';
-
-    // Extract text from the new API response format
-    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-      text = data.candidates[0].content.parts[0].text || '';
-    }
-
-    console.log('Extracted text:', text);
-
-    // Handle different response formats depending on request type
-    if (!field) {
-      try {
-        // Try to parse the response as JSON for full CV generation
-        const jsonResponse = JSON.parse(text);
-        return new Response(JSON.stringify(jsonResponse), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (e) {
-        console.error('Error parsing JSON response:', e);
-        return new Response(JSON.stringify({ text }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+    // Extract the generated text from the response
+    let text = "";
+    if (responseData.candidates && 
+        responseData.candidates[0] && 
+        responseData.candidates[0].content && 
+        responseData.candidates[0].content.parts && 
+        responseData.candidates[0].content.parts[0] && 
+        responseData.candidates[0].content.parts[0].text) {
+      text = responseData.candidates[0].content.parts[0].text.trim();
+      
+      // For skills, ensure we have exactly 5 skills if possible
+      if (field === 'skills' && text.includes(',')) {
+        const skills = text.split(',').map(s => s.trim()).filter(s => s);
+        if (skills.length > 5) {
+          text = skills.slice(0, 5).join(', ');
+        }
       }
     } else {
-      // For field-specific enhancements, return the text directly
-      return new Response(JSON.stringify({ text }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      throw new Error("Unexpected API response format");
     }
+
+    return new Response(
+      JSON.stringify({ text }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error("Error in generate-cv-content function:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
+    );
   }
 });

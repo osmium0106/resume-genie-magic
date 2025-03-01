@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Wand2 } from "lucide-react";
 import { AIEnhancer } from "./AIEnhancer";
-import { AIGenerator } from "./AIGenerator";
 import { PersonalInfoForm } from "./PersonalInfoForm";
 import { ExperienceForm } from "./ExperienceForm";
 import { EducationForm } from "./EducationForm";
@@ -140,27 +139,6 @@ export const CVForm = ({ onPreview, onBack, formData, setFormData }: CVFormProps
     });
   };
 
-  const handleAIGenerationSuccess = (data: {
-    summary: string;
-    skills: string[];
-    experience: {
-      description: string;
-    };
-  }) => {
-    setFormData(prev => ({
-      ...prev,
-      summary: data.summary,
-      skills: data.skills,
-      experience: [
-        {
-          ...prev.experience[0],
-          description: data.experience.description
-        },
-        ...prev.experience.slice(1)
-      ],
-    }));
-  };
-
   return (
     <form className="space-y-8 bg-white rounded-lg shadow-md p-8">
       {/* Personal Information */}
@@ -171,12 +149,7 @@ export const CVForm = ({ onPreview, onBack, formData, setFormData }: CVFormProps
         onEnhanceField={(content) => 
           handleEnhanceFieldSuccess('summary', content)
         }
-      >
-        <AIGenerator 
-          formData={formData} 
-          onSuccess={handleAIGenerationSuccess} 
-        />
-      </PersonalInfoForm>
+      />
 
       {/* Experience */}
       <ExperienceForm 

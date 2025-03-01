@@ -51,8 +51,23 @@ export const AIEnhancer = ({
         industry: context.industry || '',
       };
 
+      // Add specific instructions based on field type
+      let additionalInstructions = '';
+      if (field === 'summary') {
+        additionalInstructions = 'Keep it concise, about 50 words in 4 lines maximum.';
+      } else if (field === 'experience') {
+        additionalInstructions = 'Keep it concise, about 50 words in 4 lines maximum.';
+      } else if (field === 'skills') {
+        additionalInstructions = 'Generate 5 similar skills as one-word terms. For example, if given "coding", return "HTML, CSS, JavaScript, Python, C++".';
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-cv-content', {
-        body: { field, content, context: requestContext }
+        body: { 
+          field, 
+          content, 
+          context: requestContext,
+          additionalInstructions 
+        }
       });
 
       if (error) {

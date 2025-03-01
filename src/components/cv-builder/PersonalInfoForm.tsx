@@ -21,14 +21,12 @@ export const PersonalInfoForm = ({
   formData, 
   handleInputChange, 
   handleImageUpload, 
-  onEnhanceField,
-  children 
+  onEnhanceField
 }: PersonalInfoFormProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
-        {children}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -77,14 +75,16 @@ export const PersonalInfoForm = ({
           <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
             Profile Image
           </label>
-          <Input
-            id="profileImage"
-            name="profileImage"
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/90"
-          />
+          <div className="relative">
+            <Input
+              id="profileImage"
+              name="profileImage"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="w-full flex items-center file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-accent/90"
+            />
+          </div>
         </div>
       </div>
       <div className="relative">
