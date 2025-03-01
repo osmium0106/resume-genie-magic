@@ -15,6 +15,7 @@ interface AIEnhancerProps {
   };
   onSuccess: (enhancedContent: string) => void;
   buttonText?: string;
+  title?: string; // Add the title prop to the interface
   size?: "default" | "sm" | "lg" | "icon";
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
@@ -25,6 +26,7 @@ export const AIEnhancer = ({
   context = {}, 
   onSuccess, 
   buttonText, 
+  title,
   size = "icon", 
   variant = "ghost" 
 }: AIEnhancerProps) => {
@@ -87,7 +89,7 @@ export const AIEnhancer = ({
       size={size}
       onClick={handleEnhanceField}
       disabled={isGenerating || !content}
-      title="Enhance with AI"
+      title={title || "Enhance with AI"}
     >
       {buttonText ? (
         isGenerating ? "Enhancing..." : buttonText
