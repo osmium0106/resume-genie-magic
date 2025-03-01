@@ -9,6 +9,7 @@ import ClassicTemplate from "@/components/templates/ClassicTemplate";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
+import { Wand2 } from "lucide-react";
 
 interface Experience {
   title: string;
@@ -117,7 +118,10 @@ const CreateCV = () => {
         body: { field, content, context }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
       
       if (data.text) {
         setFormData(prev => {
@@ -145,6 +149,8 @@ const CreateCV = () => {
           title: "Success!",
           description: `${field.charAt(0).toUpperCase() + field.slice(1)} has been enhanced with AI.`,
         });
+      } else {
+        throw new Error('No content received from AI service');
       }
     } catch (error) {
       console.error('Error enhancing content:', error);
@@ -382,19 +388,32 @@ const CreateCV = () => {
                   />
                 </div>
               </div>
-              <div>
+              <div className="relative">
                 <label htmlFor="summary" className="block text-sm font-medium text-gray-700 mb-1">
                   Professional Summary
                 </label>
-                <Input
-                  id="summary"
-                  name="summary"
-                  type="text"
-                  required
-                  value={formData.summary}
-                  onChange={handleInputChange}
-                  placeholder="Brief professional summary"
-                />
+                <div className="flex items-center">
+                  <Input
+                    id="summary"
+                    name="summary"
+                    type="text"
+                    required
+                    value={formData.summary}
+                    onChange={handleInputChange}
+                    placeholder="Brief professional summary"
+                    className="w-full"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="ml-2"
+                    onClick={() => handleEnhanceField('summary', formData.summary)}
+                    disabled={isGenerating || !formData.summary}
+                  >
+                    <Wand2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -444,15 +463,30 @@ const CreateCV = () => {
                       />
                     </div>
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Description
                     </label>
-                    <Input
-                      value={exp.description}
-                      onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
-                      placeholder="Describe your responsibilities and achievements"
-                    />
+                    <div className="flex items-center">
+                      <Input
+                        value={exp.description}
+                        onChange={(e) => handleExperienceChange(index, 'description', e.target.value)}
+                        placeholder="Describe your responsibilities and achievements"
+                        className="w-full"
+                      />
+                      {index === 0 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="ml-2"
+                          onClick={() => handleEnhanceField('experience', exp.description)}
+                          disabled={isGenerating || !exp.description}
+                        >
+                          <Wand2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -512,13 +546,25 @@ const CreateCV = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold text-gray-900">Skills</h2>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addSkill}
-                >
-                  Add Skill
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleEnhanceField('skills', formData.skills.join(", "))}
+                    disabled={isGenerating || formData.skills.every(skill => !skill)}
+                    title="Enhance skills with AI"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addSkill}
+                  >
+                    Add Skill
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {formData.skills.map((skill, index) => (
