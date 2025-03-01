@@ -32,9 +32,10 @@ interface CVPreviewProps {
   templateId: string;
   formData: CVData;
   onBack: () => void;
+  onSave?: () => void;
 }
 
-export const CVPreview = ({ templateId, formData, onBack }: CVPreviewProps) => {
+export const CVPreview = ({ templateId, formData, onBack, onSave }: CVPreviewProps) => {
   const { toast } = useToast();
 
   const handleDownload = async () => {
@@ -89,6 +90,15 @@ export const CVPreview = ({ templateId, formData, onBack }: CVPreviewProps) => {
         >
           Back to Edit
         </Button>
+        {onSave && (
+          <Button
+            onClick={onSave}
+            variant="outline"
+            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300"
+          >
+            Save CV
+          </Button>
+        )}
         <Button
           onClick={handleDownload}
           className="bg-accent hover:bg-accent/90 text-white"

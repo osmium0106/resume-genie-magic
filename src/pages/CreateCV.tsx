@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CVForm } from "@/components/cv-builder/CVForm";
 import { CVPreview } from "@/components/cv-builder/CVPreview";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Experience {
   title: string;
@@ -20,6 +22,7 @@ interface Education {
 const CreateCV = () => {
   const { templateId } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -34,6 +37,43 @@ const CreateCV = () => {
 
   const handlePreview = () => {
     setShowPreview(true);
+  };
+
+  const handleSaveCV = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to save your CV",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('saved_cvs')
+        .insert({
+          user_id: user.id,
+          name: formData.fullName ? `${formData.fullName}'s CV` : 'Unnamed CV',
+          cv_data: formData,
+          template_id: templateId || 'minimal'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "CV saved successfully!",
+        description: "Your CV has been saved to your profile."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error saving CV",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -53,6 +93,7 @@ const CreateCV = () => {
             templateId={templateId || 'minimal'}
             formData={formData}
             onBack={() => setShowPreview(false)}
+            onSave={handleSaveCV}
           />
         ) : (
           <CVForm 
@@ -60,6 +101,7 @@ const CreateCV = () => {
             setFormData={setFormData}
             onPreview={handlePreview}
             onBack={() => navigate("/")}
+            onSave={handleSaveCV}
           />
         )}
       </div>

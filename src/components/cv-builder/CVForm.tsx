@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,9 +44,10 @@ interface CVFormProps {
     education: Education[];
     skills: string[];
   }>>;
+  onSave?: () => void;
 }
 
-export const CVForm = ({ onPreview, onBack, formData, setFormData }: CVFormProps) => {
+export const CVForm = ({ onPreview, onBack, formData, setFormData, onSave }: CVFormProps & { onSave?: () => void }) => {
   const handleExperienceChange = (index: number, field: keyof Experience, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -70,6 +70,13 @@ export const CVForm = ({ onPreview, onBack, formData, setFormData }: CVFormProps
     setFormData((prev) => ({
       ...prev,
       skills: prev.skills.map((skill, i) => (i === index ? value : skill)),
+    }));
+  };
+
+  const handleSkillDelete = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((_, i) => i !== index),
     }));
   };
 
@@ -173,6 +180,7 @@ export const CVForm = ({ onPreview, onBack, formData, setFormData }: CVFormProps
         skills={formData.skills}
         onChange={handleSkillChange}
         onAdd={addSkill}
+        onDelete={handleSkillDelete}
         onEnhanceField={(content) => 
           handleEnhanceFieldSuccess('skills', content)
         }
@@ -186,6 +194,16 @@ export const CVForm = ({ onPreview, onBack, formData, setFormData }: CVFormProps
         >
           Back to Templates
         </Button>
+        {onSave && (
+          <Button
+            type="button"
+            onClick={onSave}
+            variant="outline"
+            className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-300"
+          >
+            Save CV
+          </Button>
+        )}
         <Button
           type="button"
           onClick={onPreview}
